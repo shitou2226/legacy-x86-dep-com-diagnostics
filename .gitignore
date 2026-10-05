@@ -1,0 +1,26 @@
+# Deny by default. Explicitly allow only reviewed, original source and documentation.
+*
+!.gitignore
+!LICENSE
+!README.md
+!SECURITY.md
+!THIRD_PARTY_NOTICES.md
+!requirements.txt
+!docs/
+!docs/**
+!tools/
+!tools/**
+!tests/
+!tests/**
+!.github/
+!.github/**
+
+# Local/generated content remains excluded even under allowed directories.
+__pycache__/
+*.py[cod]
+.env
+.env.*
+backup/
+*dump*
+*.log
+*.tmp

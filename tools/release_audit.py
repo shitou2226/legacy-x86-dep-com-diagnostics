@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""Fail closed when a release tree contains binary, private, or product-specific material."""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+
+FORBIDDEN_EXTENSIONS = {
+    ".7z",
+    ".activate",
+    ".bak",
+    ".cat",
+    ".chm",
+    ".dll",
+    ".dmp",
+    ".evtx",
+    ".exe",
+    ".inf",
+    ".key",
+    ".msi",
+    ".orig",
+    ".patched",
+    ".pfx",
+    ".sys",
+    ".vxd",
+    ".zip",
+}
+
+TEXT_RULES = {
+    "absolute Windows path": re.compile(r"(?i)(?:[A-Z]:\\|C:\\Users\\)"),
+    "machine name": re.compile(r"(?i)\b(?:DESKTOP|LAPTOP)-[A-Z0-9-]+\b"),
+    "email address": re.compile(r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b"),
+    "phone number": re.compile(r"(?<!\d)(?:\+?86[- ]?)?1[3-9]\d{9}(?!\d)"),
+    "OpenAI-style key": re.compile(r"sk-[A-Za-z0-9_-]{12,}"),
+    "GitHub token": re.compile(r"(?:ghp_|github_pat_)[A-Za-z0-9_]{20,}"),
+    "AWS access key": re.compile(r"AKIA[0-9A-Z]{16}"),
+}
+
+# Build sensitive product-specific terms from fragments so this audit file does not match itself.
+BLOCKED_TERMS = (
+    "VSPD" + "CTL",
+    "ALT" + "USERNAME",
+    "USER" + "KEY",
+    "Virtual Serial Port " + "Driver 6.9",
+    "Seek n' " + "Destroy",
+)
+
+
+def audit(root: Path) -> list[str]:
+    findings: list[str] = []
+    self_path = Path(__file__).resolve()
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or ".git" in path.parts:
+            continue
+        relative = path.relative_to(root)
+        if path.suffix.casefold() in FORBIDDEN_EXTENSIONS:
+            findings.append(f"{relative}: forbidden file extension")
+            continue
+        if path.resolve() == self_path:
+            continue
+        if path.stat().st_size > 2_000_000:
+            findings.append(f"{relative}: file exceeds 2 MB review limit")
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            findings.append(f"{relative}: non-UTF-8 or unreadable file")
+            continue
+        for label, rule in TEXT_RULES.items():
+            if rule.search(text):
+                findings.append(f"{relative}: {label}")
+        lowered = text.casefold()
+        for term in BLOCKED_TERMS:
+            if term.casefold() in lowered:
+                findings.append(f"{relative}: product-specific or credential-related term")
+    return findings
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Audit a repository before publication.")
+    parser.add_argument("root", nargs="?", type=Path, default=Path.cwd())
+    args = parser.parse_args()
+    findings = audit(args.root.resolve())
+    if findings:
+        print("AUDIT FAILED")
+        for finding in findings:
+            print(f"- {finding}")
+        return 1
+    print("AUDIT PASSED: no blocked binary, private, secret-like, or product-specific material found.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
