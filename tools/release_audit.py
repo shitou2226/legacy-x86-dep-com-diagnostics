@@ -49,12 +49,14 @@ BLOCKED_TERMS = (
     "Seek n' " + "Destroy",
 )
 
+SKIP_DIRECTORIES = {".git", ".mypy_cache", ".pytest_cache", "__pycache__"}
+
 
 def audit(root: Path) -> list[str]:
     findings: list[str] = []
     self_path = Path(__file__).resolve()
     for path in sorted(root.rglob("*")):
-        if not path.is_file() or ".git" in path.parts:
+        if not path.is_file() or any(part in SKIP_DIRECTORIES for part in path.parts):
             continue
         relative = path.relative_to(root)
         if path.suffix.casefold() in FORBIDDEN_EXTENSIONS:
