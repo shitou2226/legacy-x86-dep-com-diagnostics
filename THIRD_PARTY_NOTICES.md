@@ -1,7 +1,9 @@
-# Third-Party Notices
+# 第三方软件说明
 
-No third-party software, driver, executable, dynamic-link library, installer, help file, localization resource, binary patch, activation material, or reverse-engineering dump is distributed in this repository.
+本仓库不提供第三方软件、驱动、安装包、帮助文件、汉化资源、二进制补丁、激活材料或反汇编转储。
 
-Product names mentioned by users during the private diagnostic work are intentionally omitted from this publication. Any trademarks remain the property of their respective owners.
+README 中的虚拟串口软件截图来自本机实际运行界面，仅用于说明测试端口的准备方式。它是单独安装的第三方软件，不属于本仓库的代码，也不随仓库分发。界面、名称和商标的权利归原权利人所有。
 
-The MIT License in this repository applies only to the original source code and documentation committed here. It grants no rights to third-party software examined outside this repository.
+MIT License 适用于本仓库的原创代码和文档，不授予第三方软件、截图中的界面素材、驱动或商标的使用和分发权。
+
+仓库省略了排查案例的具体产品名称和本机信息，不提供针对商业软件的修改或授权绕过方法。

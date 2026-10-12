@@ -1,21 +1,22 @@
-# Security Policy
+# 使用注意事项
 
-## Scope
+文件检查工具只读取输入文件。串口测试工具会发送数据，所以运行前要确认两端都是隔离的虚拟测试端口，不连接 PLC、变频器、仪表或其他生产设备。
 
-This repository contains read-only PE inspection and opt-in virtual serial-port test utilities. It must never contain proprietary binaries, drivers, credentials, activation data, crash dumps, machine identifiers, or personal paths.
+只检查你拥有或有权分析的文件。排查老程序的兼容问题时，保持 DEP 等系统保护开启。
 
-## Safe use
+## 提交文件前
 
-- Inspect only files you own or are authorized to analyze.
-- Run the serial test only against isolated virtual test ports.
-- Do not connect the serial test to production PLCs, drives, instruments, or safety-related equipment.
-- Do not disable system-wide DEP or other exploit protections for compatibility testing.
+请勿上传第三方程序、驱动、破解或激活材料、密钥、崩溃转储、机器标识或本机路径。截图也要逐张检查，避免带上无关窗口、账号或授权信息。
 
-Before every publication, run:
+发布前运行：
 
 ```powershell
 python tools/release_audit.py .
 python -m unittest discover -s tests -v
 ```
 
-Do not include sensitive values in an issue. Describe the category and affected file without posting the value itself.
+自动检查只覆盖部分文件类型和文字规则，不能替代人工检查。
+
+## 反馈问题
+
+可以在 Issue 中说明操作步骤、受影响的脚本和错误类型。不要贴 API Key、Token、密码或其他敏感值，也不要附上未经检查的日志或截图。

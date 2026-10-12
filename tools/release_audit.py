@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -51,6 +52,19 @@ BLOCKED_TERMS = (
 
 SKIP_DIRECTORIES = {".git", ".mypy_cache", ".pytest_cache", "__pycache__"}
 
+# Only these manually reviewed screenshots may bypass UTF-8 text inspection.
+# Any replacement needs visual privacy review and an updated SHA-256 digest.
+REVIEWED_SCREENSHOTS = {
+    "docs/images/virtual-serial-port.jpg": (
+        b"\xff\xd8\xff",
+        "9085a8bc7b6d6d8f11e689afe951eb1d0e46c438390aa485c096d7d4ffb1f753",
+    ),
+    "docs/images/tool-results.png": (
+        b"\x89PNG\r\n\x1a\n",
+        "2fce1747bb77ce0fa05c79537414f7323ca8ad649b7fcbbc230074c0d6c55dbf",
+    ),
+}
+
 
 def audit(root: Path) -> list[str]:
     findings: list[str] = []
@@ -66,6 +80,14 @@ def audit(root: Path) -> list[str]:
             continue
         if path.stat().st_size > 2_000_000:
             findings.append(f"{relative}: file exceeds 2 MB review limit")
+            continue
+        if relative.as_posix() in REVIEWED_SCREENSHOTS:
+            signature, digest = REVIEWED_SCREENSHOTS[relative.as_posix()]
+            data = path.read_bytes()
+            if not data.startswith(signature):
+                findings.append(f"{relative}: expected a reviewed screenshot image")
+            elif hashlib.sha256(data).hexdigest() != digest:
+                findings.append(f"{relative}: screenshot changed; visual privacy review required")
             continue
         try:
             text = path.read_text(encoding="utf-8")
