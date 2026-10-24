@@ -104,3 +104,8 @@ python tools/release_audit.py .
 
 - [Microsoft：PE/COFF 文件格式](https://learn.microsoft.com/windows/win32/debug/pe-format)
 - [Microsoft：DEP 数据执行保护](https://learn.microsoft.com/defender-endpoint/exploit-protection-reference#data-execution-prevention-dep)
+
+
+## 试用与相关项目
+
+[试用步骤](docs/try-it.md) · [反馈问题](https://github.com/shitou2226/legacy-x86-dep-com-diagnostics/issues/new/choose) · [其他电气与工业软件项目](docs/related-projects.md)
